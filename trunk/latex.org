@@ -1,0 +1,108 @@
+
+* LaTeX Configuration
+
+The latex.org file contains useful configuration for the LaTeX
+typesetting system.
+
+#+begin_src emacs-lisp
+  
+  (defun el-make-fig ()
+    "Insert a preformatted section for a latex figure
+  
+  This is handy for dumping the standard boilerplate for a LaTeX figure
+  into the current buffer.
+  "
+    (interactive)
+    (save-restriction
+      (insert "
+  \\begin{figure}[hbtp]
+  \\begin{center}
+  % latex will complain about bounding boxes for this figure
+  % unless you use pdflatex mode
+  \\resizebox{\\textwidth}{!}{
+  \\includegraphics{FIXME}
+  }
+  \\caption{FIXME
+  \\label{fig:FIXME}
+  }
+  \\end{center}
+  \\end{figure}
+  ")
+      (search-backward "FIXME")
+      (search-backward "FIXME")
+      (search-backward "FIXME")
+      ))
+  
+  (defun el-make-tab ()
+    "Insert a preformatted section for a latex table/
+  
+  This is handy for dumping the standard boilerplate for a LaTeX table
+  into the current buffer.
+  "
+    (interactive)
+    (save-restriction
+      (insert "
+  \\begin{table}[hbtp]
+  \\begin{center}
+  \\caption{FIXME
+  \\label{tab:FIXME}
+  }
+  \\begin{tabular}
+  FIXME
+  \\end{tabular}
+  \\end{center}
+  \\end{table}
+  ")
+      (search-backward "FIXME")
+      (search-backward "FIXME")
+      (search-backward "FIXME")
+      ))
+  
+  
+  (add-hook 'LaTeX-mode-hook 'setup-my-latex-style)
+  ;;(require 'tex-mik) ;; setup mik-tex
+  (defun setup-my-latex-style ()
+    (interactive)
+    (progn
+      (message "Setting up my latex style")
+      (setq tex-command "pdflatex")
+      (auto-fill-mode 1)
+      (local-set-key "\C-xz" 'compile)
+      (local-set-key "\C-cf" 'el-make-fig)
+      (local-set-key "\C-ct" 'el-make-tab)
+      (local-set-key "\C-cs" 'setup-my-latex-style)
+      (local-set-key "\C-j" esc-map) ;; tex-mode tries to override my
+                                     ;; remapping of C-j so override tex!
+      (setq compile-command "latex \\\\nonstopmode\\\\input ")
+      (reftex-mode)
+      (setq reftex-default-bibliography '("prop.bib" "all.bib" "paper.bib"))
+      ;; the following tells reftex to use \eqref, \figref, \tabref, and
+      ;; \secref instead of the plain \ref command.
+      (setq reftex-label-alist 
+            '(("equation" ?e "eq:" "~\\eqref{%s}" t
+               (regexp "equations?" "eqs?\\." "eqn\\."
+                       "Gleichung\\(en\\)?"  "Gl\\."))
+  
+              ("figure"    ?f "fig:" "~\\figref{%s}" caption
+               (regexp "figure?[sn]?" "figs?\\." "Abbildung\\(en\\)?" "Abb\\."))
+              ("figure*"   ?f nil nil caption)
+        
+              ("table"     ?t "tab:" "~\\tabref{%s}" caption
+               (regexp "tables?" "tab\\." "Tabellen?"))
+              ("table*"    ?t nil nil caption)
+      
+              ("section"   ?s "sec:" "~\\secref{%s}" (nil . t)
+               (regexp "parts?" "chapters?" "chap\\." "sections?" "sect?\\."
+                       "paragraphs?" "par\\."
+                       "\\\\S" "\247" "Teile?" "Kapitel" "Kap\\." "Abschnitte?"
+                       "appendi\\(x\\|ces\\)" "App\\."  "Anh\"?ange?" "Anh\\."))
+            ))
+      )
+  )
+  
+  
+  ;;(setq preview-TeX-style-dir "./:styles/:")
+  
+  ;; sometimes emacs complains about png so tell it to use pnm
+  (setq preview-image-type 'pnm) 
+#+end_src

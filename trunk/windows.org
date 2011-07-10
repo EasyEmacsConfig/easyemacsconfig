@@ -1,0 +1,121 @@
+
+The windows.org file contains emacs customizations specifically for
+windows.
+
+* Implementation
+** Font utilities
+	 :PROPERTIES:
+	 :ID:       53333f6c-4366-434a-a975-25043f2e5135
+	 :END:
+
+#+begin_src emacs-lisp
+(defun fix-my-font ()
+  "Set to better font for current machine"
+  (interactive)
+  ;;(set-frame-font "Courier New-13") ;; set to big font on windows emacs 23.1
+  ;;(set-frame-font "Courier New-14") ;; set to big font on windows emacs 23.1
+  ;;(set-frame-font "Courier 15") ;; set to big font on windows emacs 23.1
+  ;; use (w32-select-font nil t) to display/select fonts
+  (set-frame-font "Consolas-15")
+)
+#+end_src
+
+** LaTeX, AuCTeX, etc.
+	 :PROPERTIES:
+	 :ID:       e82084e8-c9e7-474d-ab09-1523ba57a31f
+	 :END:
+
+#+begin_src emacs-lisp
+;; prepare auctex stuff
+(load "auctex.el" nil t t)
+(load "preview-latex.el" nil t t)
+(require 'tex-mik)
+
+(setenv "PATH" (concat (getenv "PATH") ";c:/Program Files/MiKTeX 2.7/miktex/bin/"))
+#+end_src
+
+** ispell
+	 :PROPERTIES:
+	 :ID:       a930eb02-8196-4aa0-bd59-efa60ac55ae2
+	 :END:
+
+#+begin_src emacs-lisp
+(eval-after-load "ispell" ;; use aspell instead
+  '(progn
+     (setq ispell-program-name "aspell")))
+
+
+(require 'python-mode) ;; loads python mode from python.org
+#+end_src
+
+** handle paths for cygwin
+	 :PROPERTIES:
+	 :ID:       a5d51b14-9360-456b-a0e4-d90044842f02
+	 :END:
+
+#+begin_src emacs-lisp
+(setq grep-command "c:/cygwin/bin/grep.exe -n --exclude=.svn ")
+;(setq exec-path (append exec-path  '("c:/cygwin/bin/")))
+(setq exec-path (append exec-path  '(";c:/Program Files/MiKTeX 2.7/miktex/bin/")))
+
+(defun setup-python-paths (thePath)
+  (setq py-python-command (format "%s\\python.exe" thePath))
+  (setq python-python-command (format "%s\\python.exe" thePath))
+  (setq exec-path 
+	(append exec-path 
+		(list (replace-regexp-in-string "\\\\" "/" 
+						(format ";%s/Scripts" thePath)
+						))))
+  (setenv "PATH" (concat (getenv "PATH") 
+			 (replace-regexp-in-string 
+			  "\\\\" "/"  (format ";%s/Scripts" thePath))))
+  (setq pymacs-load-path 
+	(list (replace-regexp-in-string "\\\\" "/" 
+					(format "%s/Scripts" thePath))))
+;;  (setq pdb-path (replace-regexp-in-string "\\\\" "/" 
+;;					   (format "%s/Lib/pdb.py" thePath))
+;;	gud-pdb-command-name (symbol-name pdb-path))
+)
+(if (file-exists-p "c:\\Python25") (setup-python-paths "c:\\Python25")
+  (if (file-exists-p "c:\\Python26") (setup-python-paths "c:\\Python26")
+    (if (file-exists-p "c:\\Python27") (setup-python-paths "c:\\Python27")
+      (if (file-exists-p "/usr/bin/python")
+	(setup-python-paths "/usr/bin/python")
+      (error "cannot figure out python location")))))
+   
+
+(setq diff-command "diff")
+(setq ediff-diff-program "c:/cygwin/bin/diff.exe")
+(setq ediff-diff3-program "c:/cygwin/bin/diff3.exe")
+
+#+end_src
+
+
+
+
+** tweaks for pdb
+	 :PROPERTIES:
+	 :ID:       4b788ead-8d8c-4126-af7f-ccd32f020ece
+	 :END:
+
+#+begin_src emacs-lisp
+;; http://lists.gnu.org/archive/html/help-gnu-emacs/2003-10/msg00577.html
+(defadvice pdb (before gud-query-cmdline activate)
+  "Provide a better default command line when called interactively."
+  (interactive
+   (list (gud-query-cmdline pdb-path
+			    (file-name-nondirectory buffer-file-name)))))
+#+end_src
+
+** tweaks for orgmode
+
+#+begin_src emacs-lisp
+(setq org-babel-sh-command "cmd /k")
+#+end_src
+
+** EasyPG
+
+#+begin_src emacs-lisp
+(setq epg-gpg-program "c:/Program Files (x86)/GNU/GnuPG/gpg.exe")
+#+end_src
+

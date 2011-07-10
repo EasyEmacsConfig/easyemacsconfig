@@ -1,0 +1,26 @@
+
+#+begin_src emacs-lisp
+  
+  (require 'picture)
+  (defun picture-box-word ()
+    "Draw box around word that point is on."
+    (interactive)
+    (backward-word)
+    (picture-backward-column 1)
+    (picture-backward-column 1)
+    (picture-move-up 1)
+    (push-mark)
+    (picture-move-down 1)
+    (picture-forward-column 1)
+    (forward-word)
+    (picture-move-down 1)
+    (picture-forward-column 1)
+    (picture-draw-rectangle (mark) (point))
+    (pop-mark)
+  )
+    
+  (defun setup-my-picture-style ()
+    (local-set-key "\C-cb" 'picture-box-word)
+  )
+  (add-hook 'picture-mode-hook 'setup-my-picture-style)
+#+end_src
