@@ -1,0 +1,125 @@
+
+* Useful Macros
+
+The macros.org file contains various useful elisp macros.
+
+#+begin_src emacs-lisp
+  
+  (defun delete-whitespace ()
+    "Delete all whitespace before point."
+    (interactive)
+    (save-restriction
+      (push-mark (point))
+      (skip-chars-forward "[\t\n ]")
+      (kill-region (mark) (point))
+      (pop-mark)
+      )
+  )
+  
+  ;;; 
+  (defun unfill-paragraph ()
+    "Takes a multi-line paragraph and makes it into a single line of text.
+  
+  This is based on work by Stefan Monnier <foo at acm.org>. 
+  It is the opposite of fill-paragraph    
+  "
+    (interactive)
+    (let ((fill-column (point-max)))
+      (fill-paragraph nil)))
+  
+  (defun string-strip (s) 
+    (with-temp-buffer 
+      (insert s)
+      (replace-regexp "[ \t\n\r]" "" nil (point-min) (point-max))
+      (buffer-string)))
+  
+  (defun string-strip-default-arg (s) 
+    (with-temp-buffer 
+      (insert s)
+      (replace-regexp "=\\(.+\\)" " (default=\\1)" nil (point-min) (point-max))
+      (buffer-string)))
+  
+  (defun make-double-size-frame ()
+    "Make a frame so that if you split vertically, windows are each width 80"
+    (interactive)
+    (make-frame '((width . 164) (height . 40)))
+  )
+  
+  
+  (defun count-stuff-in-region ()
+    "Counts number of characters, words, and lines between point and mark.
+  
+  This requires the wc command to be available on your
+  system (which should be the case on LINUX systems by default). On
+  windows, you may need to install and configure CYGWIN.
+  "
+    (interactive)
+    (call-process-region (point) (mark) "wc" nil t nil)
+  )
+  
+  
+  (defun my-full-time-stamp ()
+    "Insert a full time stamp in the current buffer using the date command."
+    (interactive)
+    (save-restriction
+      (shell-command "date" t)
+      ))
+  
+  (defun my-time-stamp ()
+    "Insert a time stamp in the current buffer using the date command."
+    (interactive)
+    (save-restriction
+      (shell-command "date '+%a %b %d, %Y'" t)
+      ))
+  
+  ;; set up my function comment header for c/c++ as a macro
+  
+  (fset 'insert-tcl-comment-header
+     [?\C-u ?7 ?0 ?# return ?# return ?# ?  ?P ?R ?O ?C ?: ?\M-i ?\M-i return ?# return ?# ?  ?i ?n ?p ?u ?t ?s ?: ?\M-i return ?# return ?# ?  ?o ?u ?t ?p ?u ?t ?: ?\M-i return ?# return ?# ?  ?p ?u ?r ?p ?o ?s ?e ?: ?\M-i return ?# return ?# ?  ?m ?o ?d ?i ?f ?i ?e ?d ?: ?\M-i ?\C-q ?s ?\C-a ?\C-n ?# return ?\C-u ?7 ?0 ?# up up up up up up up up up up])
+  
+  (fset 'insert-c-comment-header
+     [?/ ?/ ?  ?\C-u ?7 ?0 ?- return ?/ ?/ return ?/ ?/ ?  ?F ?U ?N ?C ?T ?I ?O ?N ?: ?\M-i return ?/ ?/ return ?/ ?/ ?  ?I ?N ?P ?U ?T ?S ?: ?\M-i return ?/ ?/ return ?/ ?/ ?  ?R ?E ?T ?U ?R ?N ?S ?: ?\M-i return ?/ ?/ return ?/ ?/ ?  ?P ?U ?R ?P ?O ?S ?E ?: ?\M-i return ?/ ?/ return ?/ ?/ ?  ?M ?O ?D ?I ?F ?I ?E ?D ?: ?\M-i ?\C-q ?s ?\C-e return ?/ ?/ return ?/ ?/ ? ?\C-u ?7 ?0 ?- up up up up up up up up up up])
+  
+  (fset 'insert-sql-comment-header
+     [?\C-u ?7 ?0 ?- return ?- ?- return ?- ?- ?  ?I ?N ?P ?U ?T ?S ?: escape ?i return ?- ?- return ?- ?- ?  ?O ?U ?T backspace backspace backspace ?R ?E ?T ?U ?R ?N ?S ?: escape ?i return ?- ?- return ?- ?- ?  ?P ?U ?R ?P ?O ?S ?E ?: escape ?i return ?- ?- return ?\C-u ?6 ?0 ?- ?\C-u ?1 ?0 ?- ?\C-p ?\C-p ?\C-p ?\C-p ?\C-p ?\C-p])
+  
+  
+  (defalias 'insert-matlab-comment-header (read-kbd-macro
+  "C-u 50% RET % RET % SPC INPUTS: ESC i RET % RET % SPC OUTPUT: ESC i RET % RET % SPC DESCRIPTION: ESC i RET % RET % SPC $ I d $ RET % RET C-u 50% 9*C-p"))
+  
+  (add-hook 'c-mode-hook 'setup-my-c-style)
+  (add-hook 'c++-mode-hook 'setup-my-c-style)
+  
+  (defun setup-my-c-style ()
+    (progn 
+      (local-set-key "\C-qc" 'insert-c-comment-header)
+      (local-set-key "\C-xz" 'compile)
+      (hs-minor-mode)
+      )
+    )
+  
+  (add-hook 'sql-mode-hook 'setup-my-sql-style)
+  
+  (defun setup-my-sql-style ()
+    (progn 
+      (local-set-key "\C-qc" 'insert-sql-comment-header)
+      )
+    )
+  
+  (add-hook 'tcl-mode-hook 'setup-my-tcl-style)
+  (defun setup-my-tcl-style ()
+    (progn
+      (local-set-key "\C-qc" 'insert-tcl-comment-header)
+      )
+    )
+  
+  (add-hook 'octave-mode-hook 'setup-my-matlab-style)
+  (add-hook 'matlab-mode-hook 'setup-my-matlab-style)
+  (defun setup-my-matlab-style ()
+    (progn
+      (local-set-key "\C-qc" 'insert-matlab-comment-header)
+      )
+    )
+  
+  
+#+end_src

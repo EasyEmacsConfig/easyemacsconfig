@@ -1,0 +1,246 @@
+
+* Org-mode configuration
+
+The org-utils.org file contains elisp functions to make templates for org-remember.
+
+** Require org helpers and setup keys
+
+#+begin_src emacs-lisp
+  (require 'remember)
+  (require 'org-install)
+  (require 'org-ascii) ;; seems to be required to export as ascii
+  (require 'org-icalendar) ;; seems to be required to export as ical
+  (require 'org-id) ;; to use id-links
+  
+  (define-key global-map "\C-cl" 'org-store-link)
+#+end_src
+
+** Org-agenda
+
+The following sets our org agenda to point to things in
+my-home-org-dir if it exists or my-work-org-dir otherwise.
+
+#+begin_src emacs-lisp
+  (defun keep-existing (candidates)
+    "Filter a list of input files/directories and only keep ones that exist"
+    (let (result)
+      (dolist (dir candidates result)
+        (if (file-exists-p (expand-file-name dir))
+            (setq result (cons (expand-file-name dir) result))
+          )
+        )
+      )
+    )
+  
+  ;; If at home, just use my-home-org-dir files.
+  ;; If at home, just use my-work-org-dir files.
+
+  (if (file-exists-p my-home-org-dir) 
+      (setq org-agenda-files (keep-existing (list my-home-org-dir)))
+    (setq org-agenda-files (keep-existing (list my-work-org-dir))))
+  
+#+end_src
+
+*** Agenda priority and sorting
+
+The following configures how agenda items are sorted.
+
+#+begin_src emacs-lisp  
+  (defun org-cmp-sub-priority (a b)
+    "Compare the titles of string A and B
+  
+  This function can be used in the org-agenda-cmp-user-defined variable
+  and org-agenda-sorting-strategy to compare the sort order of org entries.
+  It looks for something of the from TODO[<priority>]-<num> where <priority>
+  is one of #A, #B, #C indicating an org prioity and <num> is a sub-priority
+  which org doesn't know about but which controls the sorting order. For
+  example, I have TODO entries like
+  
+   TODO [#A]-01 foo
+   TODO [#A]-02 bar
+   TODO [#A]-03 baz
+  
+  and use this function to make sure they get sorted properly in the
+  todo screen of org-agenda.
+  
+    "
+    (let* ((aa (car (last (split-string (substring-no-properties a) "TODO .#."))))
+          (bb (car (last (split-string (substring-no-properties b) "TODO .#."))))
+          (use-a (string-match "^.?-[0-9]" aa))
+          (use-b (string-match "^.?-[0-9]" bb))
+          )
+      (cond ((and use-a use-b)  ;; check if both aa and bb have a priority
+             (cond ((string-lessp aa bb) -1) ;; if so, just compare strings
+                   ((string-lessp bb aa) +1)
+                   (t nil)))
+            (use-a -1) ;; a has priority but not b
+            (use-b +1) ;; b has priority but not a
+            (t nil)) ;; nobody has priority so don't compare
+    ))
+  
+  (defun cmp-if-personal (a b)
+    "Compares org-items A and B to rank personal stuff higher.
+  "
+    (let* (
+           (aCategory (get-text-property 1 'org-category a))
+           (bCategory (get-text-property 1 'org-category b))
+           (aIsPersonal (string-match "personal" aCategory))
+           (bIsPersonal (string-match "personal" bCategory))
+           (result 
+            (if aIsPersonal (if bIsPersonal nil -1) (if bIsPersonal 1 nil)))
+           )
+      result
+      )
+    )
+  
+  (defvar my-org-cmp-list nil
+    "List of functions to use to determine priority for org-mode agenda & friends.
+  
+  This shall be a list of functions to call to compare priority of
+  items. See docs for my-org-cmp-user-defined for details.
+  ")
+  
+  (defun my-org-cmp-user-defined (a b)
+    "Compare list of user defined functions until one distinguishes arguments
+  
+  This function goes through the functions in the variable
+  my-org-cmp-list and tries each function on the given arguments A and B
+  until it gets a non-nil result and returns that result. If all give a
+  nil result, then nil is returned.
+  "
+    (let ((result nil)
+          (funcs my-org-cmp-list)
+          )
+      (while (and funcs (not result))
+        (setq result (funcall (car funcs) a b))
+        (setq funcs (cdr funcs)))
+      result)
+    )
+  
+  (setq my-org-cmp-list 
+        (list 'cmp-if-personal 'org-cmp-sub-priority))
+  (setq org-agenda-cmp-user-defined 'my-org-cmp-user-defined)
+  
+  (setq org-lowest-priority 90) ;; allow priorities #A--#Z
+  
+  (setq org-agenda-sorting-strategy
+        '((agenda user-defined-up habit-down time-up priority-down category-keep)
+          (todo   priority-down user-defined-up)
+          (tags   priority-down category-keep)
+          (search category-keep)))
+  
+#+end_src
+
+
+** General org-mode configuration
+
+#+begin_src emacs-lisp  
+
+(fset 'org-expand
+     [?\C-s ?\) ?\C-f ?\C-c ?\C-o tab tab ?\C-x ?o ?\C-r ?\( ?\C-f])
+  
+  (defun setup-my-org-mode ()
+    (interactive)
+    (local-set-key "\C-cg" 'org-expand)
+    )
+  
+  (add-hook 'org-mode-hook 'setup-my-org-mode)
+  
+  ;; active Babel languages
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((python . t)
+     (emacs-lisp . t)
+     (latex . t)
+     (sh . t)
+     (ditaa . t)
+     ))
+  
+  (if (boundp 'py-python-command)
+    (setq org-babel-python-command py-python-command))
+  
+  #+end_src
+
+
+* useful functions
+	 :PROPERTIES:
+	 :ID:       5d1d0710-9978-4390-b903-0a6f97eddacd
+	 :END:
+
+
+** time related functions
+
+#+begin_src emacs-lisp  
+
+(defun time-to-minutes (timeString)
+    (interactive)
+    (setq timeString (split-string timeString ":"))
+    (+ (* 60 (string-to-int (car timeString))) 
+       (string-to-int (nth 1 timeString)))
+    )
+  
+  (defun scheduled-time-duration (timerange)
+    (interactive)
+    (setq myMatch (string-match "[0-9]+:[0-9]+-" timerange))
+    (if myMatch 
+        (progn
+          (setq timerange (substring timerange myMatch))
+          (setq timerange (split-string timerange "-"))
+          (- (time-to-minutes (nth 1 timerange)) 
+             (time-to-minutes (nth 0 timerange))))
+      0
+    )
+    )
+  
+  (defun create-dates-for-month-and-year (month year)
+    "Create entries in date-tree format in current buffer.
+  
+   This function creates nodes for all days in given the given MONTH and YEAR
+   in the current buffer (if they do not exist already). 
+  
+  "
+    (let ((day 1)
+          (max-days (if (= 2 month) 
+                          (if (date-leap-year-p year) 29 28)
+                        (nth month 
+                             (list nil 31 28 31 30 31 30 31 31 30 31 30 31))))
+          )
+      (while (<= day max-days)
+        (org-datetree-find-date-create (list month day year))
+        (setq day (+ 1 day))
+        )
+      )
+    )
+  
+  #+end_src
+
+** selection functions
+#+begin_src emacs-lisp 
+  (defun get-random-item (modulo items)
+    "Get random item with seed taken from the date based on MODULO.
+  
+  The MODULO argument can be either day, week, month, or year.
+  
+  The ITEMS argument should be a vector of strings.
+  
+  For example, 
+  
+    (get-random-item ''week'' (vector ''chocoloate'' ''vanilla'' ''strawberry''))
+  
+  will select a random ice-cream flavor for the week.
+  "
+    (interactive)
+    (let* ((fstring (if (string= modulo "month") "%m"
+                      (if (string= modulo "week") "%U"
+                        (if (string= modulo "day") "%d" 
+                          (error "Invalid value for modulo in get-virture")))))
+           (itemIndex 
+            (random* (length items) 
+                     (make-random-state (string-to-number 
+                                         (format-time-string fstring))))))
+      (aref items itemIndex)
+      )
+    )   
+  
+#+end_src
+

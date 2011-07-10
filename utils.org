@@ -1,0 +1,67 @@
+
+The utils.org file sets up various useful utilities for emacs.
+
+* EPA
+	:PROPERTIES:
+	:ID:       1905e401-efaf-49d9-81c8-ca5d281acf2f
+	:END:
+
+EPA is a wondeful package to automatically encrypt/decrypt files
+ending in .gpg.  You can either use a key or use symmetric encryption
+where you specify a password. For example, the symmetric encryption
+version lets you very easily setup an encrypted password vault.
+
+#+begin_src emacs-lisp
+  (require 'epa)
+  (if (file-exists-p "c:/Program Files/GNU/GnuPG/gpg.exe")
+      (setq epg-gpg-program "c:/Program Files/GNU/GnuPG/gpg.exe"))
+#+end_src
+
+* Tramp
+
+Tramp lets you read/write remote files. On windows, I find that PuTTy
+is a useful transport agent. This can be setup as follows:
+
+#+begin_src emacs-lisp
+  (require 'tramp)
+  (setq tramp-verbose 10)
+  (setq tramp-default-method "windowsPlink")
+  (setq tramp-debug-buffer t)
+  (add-to-list 'tramp-methods
+               '("windowsPlink" ;; may need to copy windows plink into cygwin
+                 (tramp-login-program "c:\\cygwin\\bin\\plink.exe")
+                 (tramp-login-args           (("%h") ("-l" "%u") ("-P" "%p")
+                                              ("-ssh")))
+                 (tramp-remote-sh            "/bin/sh")
+                 (tramp-copy-program         nil)
+                 (tramp-copy-args            nil)
+                 (tramp-copy-keep-date       nil)
+                 (tramp-password-end-of-line "xy") ;see docstring for "xy"
+                 (tramp-default-port         22)
+                 ))
+#+end_src
+
+* Calculations
+
+The following provides the vsumif function which is useful in tables.
+
+#+begin_src emacs-lisp
+  (defun vsumif (target x y)
+  "Sum values of Y for all X matching STRING."
+    (apply '+
+           (mapcar*
+            (lambda(x y)
+              (if (string= x target) (string-to-number y) 0))
+            x y)))
+#+end_src
+
+For example, try the one below:
+
+| name | a | b |
+|------+---+---|
+| foo  | 1 | 2 |
+| bar  | 3 | 2 |
+| foo  | 4 | 5 |
+|------+---+---|
+| sums | 5 | 7 |
+#+TBLFM: @5$2='(vsumif "foo" (list @-I$1..@-II$1) (list @-I$2..@-II$2))::@5$3='(vsumif "foo" (list @-I$1..@-II$1) (list @-I$3..@-II$3))

@@ -1,0 +1,308 @@
+#+TITLE: Easy Emacs Configuration
+#+OPTIONS: H:2 num:nil toc:t
+
+#+begin_quote 
+Emacs outshines all other editing software in approximately the same
+way that the noonday sun does the stars. It is not just bigger and
+brighter; it simply makes everything else vanish.
+
+-- Neal Stephenson, "In the Beginning was the Command Line"
+#+end_quote
+
+* Quickstart
+
+If you simply want to install =Easy Emacs Configuration= as quickly as
+possible, simply follow the instructions in the [[id:466c7361-29b6-4298-950a-1e9a11bea586][Prerequisites and Installing]] 
+section.
+
+* Introduction
+
+The =Easy Emacs Configuration= package is a set of Emacs configuration
+packages with accompanying documentation. 
+
+The main =emacs.org= file controls initialization of Emacs files using
+org-babel. The benefits of writing configuration files in org-babel is
+that by using literate programming, it is much easier to see and edit
+the different components.
+
+** Prerequisites and Installing
+	 :PROPERTIES:
+	 :ID:       466c7361-29b6-4298-950a-1e9a11bea586
+	 :END:
+
+*** Install org-mode
+
+Before you can use this configuration package, you will need to
+obtain and install a recent copy of org-mode. See [[http://orgmode.org/]]
+for details.
+
+*** Unpack the Easy Emacs Configuration package in a useful place
+
+Download the latest copy of the =Easy Emacs Configuration= (=EEC=) package
+from http://code.google.com/p/eec/downloads/list and unpack it
+into a convenient place.
+
+*** Point your main .emacs file to where you unpacked EEC
+		:PROPERTIES:
+		:ID:       9459d656-af65-45b2-9008-dc327f244048
+		:END:
+
+Emacs looks for =~/.emacs= for the initial configuration file
+depending on your system, =~/.emacs= may be in an inconvenient
+place. For =EEC=, simply put the following lines into your =.emacs=
+file to point to =EEC=. 
+
+#+BEGIN_EXAMPLE
+;; Initial .emacs file pointing to the "Easy Emacs Configuration" package.
+;; See http://code.google.com/p/easy-emacs-config/ for more details.
+
+;; As described in the EEC docs, we set my-emacs-dir to point to
+;; the location where EEC is installed.
+(setq my-emacs-dir <where-you-unpacked-EEC>)
+
+;; Require org-mode stuff
+(require 'org-install)
+(require 'ob-tangle)
+
+;; As discussed in the User Overrides section of the EEC manual,
+;; you can point EEC to various user overrides/customizations if you like.
+;;(setq eec-user-file <optional-overrides-file>.org) 
+
+;; Now load EEC either via 
+(org-babel-load-file (expand-file-name "emacs.org" my-emacs-dir))
+
+#+END_EXAMPLE
+
+Obviously, you will need to replace =<where-you-unpacked-EEC= with the
+appropriate directory so that =my-emacs-dir= is defined properly.
+
+(If you have trouble find where your system
+thinks your initial =.emacs= file is, try starting Emacs and visiting
+the file "~/.emacs").
+
+** Questions
+
+The [[http://emacswiki.org][Emacs Wiki]] is also handy for questions you may have. 
+
+** Structure
+   :PROPERTIES:
+   :CUSTOM_ID: structure
+   :END:
+
+The emacs.org file is where everything begins. It's the first file to
+get loaded. It in turn calls other files.
+
+* Core Emacs configuration
+
+This section contains the core emacs configuration.
+
+** Simple configuration options
+
+This section defines various simple configuration options.
+
+#+begin_src emacs-lisp 
+  
+  (setq inhibit-startup-message t) ; prevents emacs startup msg
+  
+  ;; The following is sometimes helpful for supporting emacs/svn integration
+  (if (not (boundp 'xemacs-codename)) (add-to-list 'vc-handled-backends 'SVN))
+  
+  ;; On windows, it is useful to make sure cygwin is in your path.
+  (setq exec-path (cons "c:/cygwin/bin" exec-path))
+  
+  ;; It's nice to see the time
+  (display-time)
+  
+  (setq   compile-command "gmake "
+          auto-save-default t
+          auto-save-interval 100
+          fill-column 75
+          comment-column 4
+          line-number-mode t)
+  
+#+end_src
+
+** Mode configuration and autoloads
+
+One of the wonderful features of emacs is its ability to support a
+variety of editing modes. In this section we setup emacs to load
+appropriate modes based on file extensions.
+
+#+begin_src emacs-lisp 
+  
+  (setq auto-mode-alist
+        (append '(("\\.m$"  . octave-mode)
+                  ("\\.C$"  . c++-mode)
+                  ("\\.cc$" . c++-mode)
+                  ("\\.cpp$" . c++-mode)
+                  ("\\.hh$" . c++-mode)
+                  ("\\.c$"  . c-mode)   ; to edit C code
+                  ("\\.h$"  . c++-mode)   ; to edit C code
+                  ("\\Makefile*" . makefile-mode)
+                  ("\\.texi" . texinfo-mode)
+                  ("\\.tex" . latex-mode)
+                  ("\\.outline$" . outline-mode)
+                  ("\\.emacs*" . lisp-mode)
+                  ("\\.gnus" . lisp-mode)
+                  ("\\.py*" . python-mode)
+                  ("\\.org$*" . org-mode)
+                  ) auto-mode-alist))
+  
+#+end_src
+
+** Paths
+
+To make Emacs work properly, we sometimes need to explicitly specify
+various paths.
+
+Note that you should have already setup =my-emacs-dir= as discussed in
+the [[id:466c7361-29b6-4298-950a-1e9a11bea586][Prerequisites and Installing]] section.
+
+#+begin_src emacs-lisp 
+  ;; Setup the load-path properly so emacs knows where to find
+  ;; various third-party packages.
+  ;; Note that you should have already defined my-emacs-dir in your
+  ;; initial.emacs file.
+  (add-to-list 'load-path (expand-file-name "third_party" my-emacs-dir))
+#+end_src
+
+** General Utility Functions
+		:PROPERTIES:
+		:ID:       dd74febe-df08-4fa6-ba14-f67c93dfc14a
+		:END:
+
+This section contains functions used in emacs.org to do the
+initialization. 
+
+#+srcname: my-load
+#+begin_src emacs-lisp 
+  (defun my-load (file)
+    "This function is to be used to load literate emacs elisp files."
+    (message (format "Loading file %s via my-load" file))
+    (org-babel-load-file (expand-file-name file
+                                           my-emacs-dir)))
+#+end_src
+
+** Coding systems
+
+#+begin_src emacs-lisp
+  (setq file-coding-system-alist
+        (cons '(".org" . utf-8-emacs) file-coding-system-alist))
+#+end_src
+
+* User Overrides
+
+You will often want to customize Emacs further. To allow you to add
+such customizations while using the =EEC= package, you can define the
+variable =eec-user-file= in your =~/.emacs= file as mentioned when
+discussing how to [[id:9459d656-af65-45b2-9008-dc327f244048][point your main .emacs file to where you unpacked EEC]].
+
+The =EEC= package will expect to find the following variables by
+loading the file named by the =eec-user-file= variable:
+
+#+begin_src emacs-lisp
+  
+  (defvar eec-user-file nil
+    "Name of a .org file containing user overrides for various EEC items.
+  
+  If this file exists, it will be loaded by emacs. A few items you may 
+  find useful to include in your eec-user-file are:
+  
+    1. Overrides for the my-work-org-dir and my-home-org-dir variables.
+    2. Templates for org-capture.
+  
+  A good place to set the value of eec-user-file is in your ~/.emacs which
+  loads the EEC package.
+  ")
+  
+  (defvar my-work-org-dir (expand-file-name "../org" my-emacs-dir)
+    "Directory where your work org mode journal, todo list, etc. live.
+  
+  The my-work-org-dir variable in EEC points to the directory where your main 
+  org files live. This is used in org-capture, and other commands which work
+  with your org-mode files for ''work''. EEC also provides a separate
+  my-home-org-dir so you can have a similar structure for your
+  personal (i.e., non-work) org files.
+  
+  If you want to change this directory, you can set a new value in the
+  file pointed to by your eec-user-file variable.  ")
+  
+  (defvar my-home-org-dir (expand-file-name "../../journal/org" my-emacs-dir)
+    "Directory where your home org mode journal, todo list, etc. live.
+  
+  The my-home-org-dir variable in EEC points to the directory where
+  your personal org files live. This is used in org-capture, and other
+  commands which work with your org-mode files for ''home''. EEC also
+  provides a separate my-work-org-dir so you can have a similar
+  structure for your work (i.e., non-personal) org files.
+  
+  If you want to change this directory, you can set a new value in the
+  file pointed to by your eec-user-file variable.  ")
+  
+  (if eec-user-file
+      (my-load eec-user-file)
+    (message (format "Could not find eec-user-file ''%s'' to load" 
+              eec-user-file))
+    ) ;; load file containing eec user variables.
+#+end_src
+
+* Loading other component specific application files
+
+In this section we load in various other configuration files.
+
+** System specific loads
+		:PROPERTIES:
+		:ID:       8ab5b531-d670-4164-84bb-c1c3254ee64e
+		:END:
+
+#+begin_src emacs-lisp
+  (if (eq system-type 'windows-nt) (my-load "windows.org"))
+	(if (eq system-type 'gnu/linux) (my-load "linux.org"))
+#+end_src
+
+** Generally useful components
+		:PROPERTIES:
+		:ID:       e588da3c-ed36-4235-bf8a-b945f56e5e16
+		:END:
+
+We load a variety of separate org-mode files to configure various things.
+
+#+begin_src emacs-lisp
+(my-load "utils.org")
+(my-load "latex.org")
+(my-load "macro.org")
+(my-load "epython.org")
+(my-load "keymaps.org")
+(my-load "picture.org")
+#+end_src
+
+** Org-utils
+
+Various utilities used by in org-mode configuration.
+
+#+begin_src emacs-lisp
+(my-load "org-utils.org")
+#+end_src
+
+* Tips and tricks
+
+** TAGS
+
+You can make it so that C-t on a function or class definition
+automatically goes to the definition location by doing something like:
+
+  1. Run etags via =etags <dirName> -name \*.py= to search all of
+     =<dirName>=. This will create a TAGS file.
+  2. Do =M-x visit-tags-table= to load the tags table.
+  3. Use =C-t= on a function or class name.
+
+** currency symbols
+ 
+ - C-x 8 Y = Yen symbol
+ - C-x 8 L = Pound symbol
+ - C-x 8 E = Euro symbol
+
+* Future Work
+
+As it stands, this file is very basic. Further work is needed to
+properly integrate more emacs files in this framework. 

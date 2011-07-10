@@ -1,0 +1,76 @@
+
+#+begin_src emacs-lisp
+    
+    (global-set-key "\C-xz" 'compile)
+    (global-set-key "\C-h" 'delete-backward-char) 
+    (global-set-key "\M-h" 'help-for-help) 
+    (global-set-key "\M-g" 'goto-line) 
+    (global-set-key "\M-[ D" 'backward-char)
+    (global-set-key "\C-o" 'dabbrev-expand)
+    (global-set-key "\C-t" 'find-tag)
+    (global-set-key "\C-xt" 'transpose-chars) ;; used to be C-t
+    (global-set-key "\C-xm" 'mh-smail)
+    (global-set-key [home] 'beginning-of-buffer)
+    (global-set-key [end]  'end-of-buffer)
+    (global-set-key "\C-j"  esc-map) ;; so C-j works like escape
+    
+    (setq my-mode-map (make-keymap 'my-keymap))
+    (define-key my-mode-map "a" 'auto-fill-mode)
+    (define-key my-mode-map "b" 'bury-buffer)
+    (define-key my-mode-map "c" 'format-iel-conf)
+    (define-key my-mode-map "d" 'delete-whitespace)
+    (define-key my-mode-map "e" 'execute-extended-command)
+    (define-key my-mode-map "f" 'forward-sexp)
+    (define-key my-mode-map "F" 'fix-my-font)
+    (define-key my-mode-map "g" 'grep)
+    (define-key my-mode-map "h" 'help)
+    (define-key my-mode-map "j" 'format-iel-jour)
+    (define-key my-mode-map "k" 'kill-word)
+    (define-key my-mode-map "l" 'load-file)
+    (define-key my-mode-map "o" 'org-agenda)
+    (define-key my-mode-map "\C-l" 'esvn-get-log-msg)
+    (define-key my-mode-map "\C-k" 'backward-kill-word)
+    (define-key my-mode-map "m" 'manual-entry)
+    (define-key my-mode-map "C" '(lambda () 
+                                   (interactive) 
+                                   (message (format "column %i" 
+                                                    (current-column)))))
+    (define-key my-mode-map "r" 'org-capture)
+    (define-key my-mode-map "s" 'my-time-stamp)
+    (define-key my-mode-map "t" 'visit-things-to-do)
+    (define-key my-mode-map "v" 'describe-variable)
+    (define-key my-mode-map "w" 'count-stuff-in-region)
+    (define-key my-mode-map "x" 'toggle-read-only)
+    (define-key my-mode-map "%" 'query-replace-regexp)
+    (define-key my-mode-map "\C-d" 'visit-things-done)
+    (define-key my-mode-map "\C-q" 'quoted-insert)
+    (define-key my-mode-map "\C-s" 'isearch-forward-regexp) ;; to insert newline into 
+    (define-key my-mode-map "\C-r" 'isearch-backward-regexp);; regexp use C-j to get ^J
+    (define-key my-mode-map "\C-f" 'flymake-mode)
+    (define-key global-map "\C-q" my-mode-map) ;; C-q used to be quoted-insert
+    
+  
+  (defun insert-euro ()
+    "Insert a Euro currency symbol in utf-8."
+    (interactive)
+    (ucs-insert #x20ac))
+  
+  (global-set-key "\C-x8E" 'insert-euro)  ;; Euro symbol
+    
+    ;; other cool keys to use are \C-w --> cut region
+    ;;                            \C-space --> set mark
+    ;;                            \C-a --> beggining of line
+    ;;                            \C-e --> end of line
+    ;;                            C-x C-t transpose lines
+    ;;                            C-j newline and indent
+    ;;                            C-x C-o delete blank lines
+    ;;                            redo-complex-command
+    ;;                            C-x r ... ;; rectangle commands
+    ;;                            C-[ is bound to ESC
+    ;;                            Alt is bound to ESC
+    ;;                            C-x x x copies to register
+    ;;                            C-x g yank from register
+    ;;                            M-d is bound to kill-word
+    ;; Location: 37:52:18N 122:16:18W
+    
+#+end_src
