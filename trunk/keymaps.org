@@ -1,4 +1,46 @@
 
+* Define some accelerators 
+
+The following defines some directory accelerators. You can set
+=my-accel-list= to be a list like the one in =default-accel-list= and
+EEC will make it so that =C-q d= will try to jump to your accelerators.
+
+#+begin_src emacs-lisp
+  
+  ;; See comments in Easy Emacs Config keymaps.org.
+  
+  (setq my-dir-mode-map (make-keymap 'my-dir-keymap))
+  
+  (defun help-on-my-dir-mode-map ()
+    (interactive)
+    (message (format "bindings for my-dir-mode-map:\n%s" my-dir-mode-map-msg)))
+  
+  
+  (defun set-my-accelators (myList)
+    (setq my-dir-mode-map-msg "")
+    (dolist (item myList) 
+      (define-key my-dir-mode-map (car item) 
+        `(lambda () (interactive) 
+           (let ((default-directory ,(cadr item)))
+             (call-interactively 'find-file))))
+      (setq my-dir-mode-map-msg
+            (concat my-dir-mode-map-msg 
+                    (format "%s:  %s\n" (car item) (cadr item))))
+      )
+    (define-key my-dir-mode-map "?" 'help-on-my-dir-mode-map))
+  
+  (defvar my-accel-list (list '("e" "~/.emacs")) 
+    "A list of pairs specifying directory accelerators. 
+  
+  For example, providing (list '(\"e\" \"~/.emacs\")) will make it
+  so that C-q d e will go to ~/.emacs.
+  ")
+  
+  (set-my-accelators my-accel-list)
+  
+#+end_src
+
+* Setup the keymap
 #+begin_src emacs-lisp
     
     (global-set-key "\C-xz" 'compile)
@@ -38,11 +80,12 @@
     (define-key my-mode-map "r" 'org-capture)
     (define-key my-mode-map "s" 'my-time-stamp)
     (define-key my-mode-map "t" 'visit-things-to-do)
+    (define-key my-mode-map "u" 'unfill-paragraph)
     (define-key my-mode-map "v" 'describe-variable)
     (define-key my-mode-map "w" 'count-stuff-in-region)
     (define-key my-mode-map "x" 'toggle-read-only)
     (define-key my-mode-map "%" 'query-replace-regexp)
-    (define-key my-mode-map "\C-d" 'visit-things-done)
+    (define-key my-mode-map "\C-d" my-dir-mode-map)
     (define-key my-mode-map "\C-q" 'quoted-insert)
     (define-key my-mode-map "\C-s" 'isearch-forward-regexp) ;; to insert newline into 
     (define-key my-mode-map "\C-r" 'isearch-backward-regexp);; regexp use C-j to get ^J
