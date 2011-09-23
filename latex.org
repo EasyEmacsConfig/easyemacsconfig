@@ -10,28 +10,31 @@ typesetting system.
     "Insert a preformatted section for a latex figure
   
   This is handy for dumping the standard boilerplate for a LaTeX figure
-  into the current buffer.
+  into the current buffer. It asks you for a relative file name for
+  the figure, drops that into the includegraphics{...} line and tries
+  to strip the filename into a label. If you want to do this manually,
+  just provide FIXME instead of a filename.
   "
     (interactive)
+    (let* ((relFile (read-from-minibuffer "relative file name? "))
+           (rfStripFig (replace-regexp-in-string "figures/" "" relFile))
+           (label (replace-regexp-in-string ".pdf$" "" rfStripFig)))
     (save-restriction
-      (insert "
+      (insert (format "
   \\begin{figure}[hbtp]
   \\begin{center}
-  % latex will complain about bounding boxes for this figure
-  % unless you use pdflatex mode
+  %% latex will complain about bounding boxes for this figure
+  %% unless you use pdflatex mode
   \\resizebox{\\textwidth}{!}{
-  \\includegraphics{FIXME}
+  \\includegraphics{%s}
   }
   \\caption{FIXME
-  \\label{fig:FIXME}
+  \\label{fig:%s}
   }
   \\end{center}
   \\end{figure}
-  ")
-      (search-backward "FIXME")
-      (search-backward "FIXME")
-      (search-backward "FIXME")
-      ))
+  " relFile label)))
+      (search-backward "FIXME")))
   
   (defun el-make-tab ()
     "Insert a preformatted section for a latex table/

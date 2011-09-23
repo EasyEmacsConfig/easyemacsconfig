@@ -135,30 +135,32 @@ The following configures how agenda items are sorted.
 ** General org-mode configuration
 
 #+begin_src emacs-lisp  
-
-(fset 'org-expand
-     [?\C-s ?\) ?\C-f ?\C-c ?\C-o tab tab ?\C-x ?o ?\C-r ?\( ?\C-f])
   
-  (defun setup-my-org-mode ()
-    (interactive)
-    (local-set-key "\C-cg" 'org-expand)
-    )
-  
-  (add-hook 'org-mode-hook 'setup-my-org-mode)
-  
-  ;; active Babel languages
-  (org-babel-do-load-languages
-   'org-babel-load-languages
-   '((python . t)
-     (emacs-lisp . t)
-     (latex . t)
-     (sh . t)
-     (ditaa . t)
-     ))
-  
-  (if (boundp 'py-python-command)
-    (setq org-babel-python-command py-python-command))
-  
+  (fset 'org-expand
+       [?\C-s ?\) ?\C-f ?\C-c ?\C-o tab tab ?\C-x ?o ?\C-r ?\( ?\C-f])
+    
+    (defun setup-my-org-mode ()
+      (interactive)
+      (flyspell-mode)
+      (auto-fill-mode 1)
+      (local-set-key "\C-cg" 'org-expand)
+      )
+    
+    (add-hook 'org-mode-hook 'setup-my-org-mode)
+    
+    ;; active Babel languages
+    (org-babel-do-load-languages
+     'org-babel-load-languages
+     '((python . t)
+       (emacs-lisp . t)
+       (latex . t)
+       (sh . t)
+       (ditaa . t)
+       ))
+    
+    (if (boundp 'py-python-command)
+      (setq org-babel-python-command py-python-command))
+    
   #+end_src
 
 

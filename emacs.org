@@ -64,6 +64,11 @@ file to point to =EEC=.
 (require 'org-install)
 (require 'ob-tangle)
 
+;; If you have installed dired+ and w32-browser, these
+;; are very handy things to use on Windows. If not, either
+;; install them or comment out the following:
+(require 'dired+)
+
 ;; As discussed in the User Overrides section of the EEC manual,
 ;; you can point EEC to various user overrides/customizations if you like.
 ;;(setq eec-user-file <optional-overrides-file>.org) 
