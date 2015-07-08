@@ -1,0 +1,1 @@
+The eec package provides some configuration files for emacs based on org-mode.
