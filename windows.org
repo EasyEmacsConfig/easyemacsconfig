@@ -58,7 +58,7 @@ windows.
 
   (defun find-cyg-path (myProg)
     (setq result nil)
-    (dolist (myDir '("c:/cygwin64/bin" "c:/cygwin/bin") result)
+    (dolist (myDir '("c:/cygwin64/bin/" "c:/cygwin/bin/") result)
       (if (file-exists-p (concat myDir myProg))
           (setq result (concat myDir myProg))))
     )
