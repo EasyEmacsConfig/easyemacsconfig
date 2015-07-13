@@ -101,6 +101,21 @@ get loaded. It in turn calls other files.
 
 This section contains the core emacs configuration.
 
+** Package management
+
+Using =package= for package management along with the MELPA repository
+makes life much easier. If we are using it, we need to generally load it
+early on.
+
+#+begin_src emacs-lisp
+(when (>= emacs-major-version 24)
+  (require 'package)
+  (add-to-list
+   'package-archives
+   '("melpa" . "http://melpa.org/packages/")
+   t)
+  (package-initialize))
+#+end_src
 ** Simple configuration options
 
 This section defines various simple configuration options.

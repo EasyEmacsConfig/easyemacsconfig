@@ -29,17 +29,17 @@
   ;;
   ;;    3A. Download and install pylint and its dependencies from logilab.
   ;;
-  ;;    3B. Save the epylint.py script below somewhere appropriate. On
-  ;;        windows, you will also need to create a file called epylint.bat
-  ;;        that run python on epylint.py. The easist way to do this is make
-  ;;        epylint.bat contain the line
+  ;;    3B. Save the myepylint.py script below somewhere appropriate. On
+  ;;        windows, you will also need to create a file called myepylint.bat
+  ;;        that run python on myepylint.py. The easist way to do this is make
+  ;;        myepylint.bat contain the line
   ;;
-  ;;            c:\Python25\python.exe c:\Python25\Scripts\epylint.py %*
+  ;;            c:\Python25\python.exe c:\Python25\Scripts\myepylint.py %*
   ;;
   ;;        NOTE: you may need to modify c:\Python25\Scripts\pylint.py to
   ;;              make sure it points to your python implementation.
   ;;
-  ;;    3C. Make sure the epylint.bat file is in your path. On Windows, you
+  ;;    3C. Make sure the myepylint.bat file is in your path. On Windows, you
   ;;        can do this by right-clicking on "My Computer", clicking on the
   ;;        "Advanced" tab, clicking on the "Environment Variables" button,
   ;;        selecting on the "Path" system variable, clicking edit, and
@@ -48,7 +48,7 @@
   ;;        script installed by pylint is correct (the default one may
   ;;        have "python" instead of the full python executable path).
   
-  ;;;;;;;;;;;;;;;;;;;;;;  epylint.py script  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;;;;;;;;;;;;;;;;;;;;;;  myepylint.py script  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;;#!/usr/bin/env python
   ;;
   ;;import re
@@ -427,7 +427,7 @@
              (local-file (file-relative-name
                           temp-file
                           (file-name-directory buffer-file-name))))
-        (list "epylint.bat" (list local-file))))
+        (list "c:/Python27/Scripts/myepylint.bat" (list local-file))))
     
     (add-to-list 'flymake-allowed-file-name-masks
                  '("\\.py\\'" flymake-pylint-init)))

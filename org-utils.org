@@ -8,8 +8,6 @@ The org-utils.org file contains elisp functions to make templates for org-rememb
 #+begin_src emacs-lisp
   (require 'remember)
   (require 'org-install)
-  (require 'org-ascii) ;; seems to be required to export as ascii
-  (require 'org-icalendar) ;; seems to be required to export as ical
   (require 'org-id) ;; to use id-links
   
   (define-key global-map "\C-cl" 'org-store-link)

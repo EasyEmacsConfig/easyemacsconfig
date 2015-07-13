@@ -27,11 +27,11 @@ windows.
 
 #+begin_src emacs-lisp
 ;; prepare auctex stuff
-(load "auctex.el" nil t t)
-(load "preview-latex.el" nil t t)
-(require 'tex-mik)
+;;(load "auctex.el" nil t t)
+;;(load "preview-latex.el" nil t t)
+;;(require 'tex-mik)
 
-(setenv "PATH" (concat (getenv "PATH") ";c:/Program Files/MiKTeX 2.7/miktex/bin/"))
+;;(setenv "PATH" (concat (getenv "PATH") ";c:/Program Files/MiKTeX 2.7/miktex/bin/"))
 #+end_src
 
 ** ispell
@@ -54,42 +54,48 @@ windows.
 	 :END:
 
 #+begin_src emacs-lisp
-(setq grep-command "c:/cygwin/bin/grep.exe -n --exclude=.svn ")
-;(setq exec-path (append exec-path  '("c:/cygwin/bin/")))
-(setq exec-path (append exec-path  '(";c:/Program Files/MiKTeX 2.7/miktex/bin/")))
+  (setq diff-command "diff")
 
-(defun setup-python-paths (thePath)
-  (setq py-python-command (format "%s\\python.exe" thePath))
-  (setq python-python-command (format "%s\\python.exe" thePath))
-  (setq exec-path 
-	(append exec-path 
-		(list (replace-regexp-in-string "\\\\" "/" 
-						(format ";%s/Scripts" thePath)
-						))))
-  (setenv "PATH" (concat (getenv "PATH") 
-			 (replace-regexp-in-string 
-			  "\\\\" "/"  (format ";%s/Scripts" thePath))))
-  (setq pymacs-load-path 
-	(list (replace-regexp-in-string "\\\\" "/" 
-					(format "%s/Scripts" thePath))))
-;;  (setq pdb-path (replace-regexp-in-string "\\\\" "/" 
-;;					   (format "%s/Lib/pdb.py" thePath))
-;;	gud-pdb-command-name (symbol-name pdb-path))
-)
-(if (file-exists-p "c:\\Python25") (setup-python-paths "c:\\Python25")
-  (if (file-exists-p "c:\\Python26") (setup-python-paths "c:\\Python26")
-    (if (file-exists-p "c:\\Python27") (setup-python-paths "c:\\Python27")
-      (if (file-exists-p "/usr/bin/python")
-	(setup-python-paths "/usr/bin/python")
-      (error "cannot figure out python location")))))
-   
+  (defun find-cyg-path (myProg)
+    (setq result nil)
+    (dolist (myDir '("c:/cygwin64/bin" "c:/cygwin/bin") result)
+      (if (file-exists-p (concat myDir myProg))
+          (setq result (concat myDir myProg))))
+    )
+  (setq grep-command (concat (find-cyg-path "grep.exe") " -n --exclude=.svn "))
+  (setq ediff-diff-program (find-cyg-path "diff.exe"))
+  (setq ediff-diff3-program (find-cyg-path "diff3.exe"))
+        
+  (setq exec-path (append exec-path  '(";c:/Program Files/MiKTeX 2.7/miktex/bin/")))
 
-(setq diff-command "diff")
-(setq ediff-diff-program "c:/cygwin/bin/diff.exe")
-(setq ediff-diff3-program "c:/cygwin/bin/diff3.exe")
+  (defun setup-python-paths (thePath)
+    (setq py-python-command (format "%s\\python.exe" thePath))
+    (setq python-python-command (format "%s\\python.exe" thePath))
+    (setq exec-path 
+          (append exec-path 
+                  (list (replace-regexp-in-string "\\\\" "/" 
+                                                  (format ";%s/Scripts" thePath)
+                                                  ))))
+    (setenv "PATH" (concat (getenv "PATH") 
+                           (replace-regexp-in-string 
+                            "\\\\" "/"  (format ";%s/Scripts" thePath))))
+    (setq pymacs-load-path 
+          (list (replace-regexp-in-string "\\\\" "/" 
+                                          (format "%s/Scripts" thePath))))
+  ;;  (setq pdb-path (replace-regexp-in-string "\\\\" "/" 
+  ;;                                         (format "%s/Lib/pdb.py" thePath))
+  ;;      gud-pdb-command-name (symbol-name pdb-path))
+  )
+  (if (file-exists-p "c:\\Python25") (setup-python-paths "c:\\Python25")
+    (if (file-exists-p "c:\\Python26") (setup-python-paths "c:\\Python26")
+      (if (file-exists-p "c:\\Python27") (setup-python-paths "c:\\Python27")
+        (if (file-exists-p "/usr/bin/python")
+          (setup-python-paths "/usr/bin/python")
+        (error "cannot figure out python location")))))
+     
+
 
 #+end_src
-
 
 
 
@@ -118,4 +124,24 @@ windows.
 #+begin_src emacs-lisp
 (setq epg-gpg-program "c:/Program Files (x86)/GNU/GnuPG/gpg.exe")
 #+end_src
+** edit server
 
+#+begin_src emacs-lisp
+(require 'edit-server)
+(edit-server-start)
+#+end_src
+
+** git, Magit, etc.
+
+Setup magit to work properly on windows
+
+#+begin_src emacs-lisp
+(if (file-exists-p "c:/Program Files (x86)/Git/bin/git.exe")
+  (setq magit-git-executable "c:/Program Files (x86)/Git/bin/git.exe")
+)
+(if (file-exists-p "c:/Program Files (x86)/Git/bin/git.exe")
+  (setq vc-git-program "c:/Program Files (x86)/Git/bin/git.exe")
+)
+
+(global-set-key (kbd "C-x g") 'magit-status)
+#+end_src
